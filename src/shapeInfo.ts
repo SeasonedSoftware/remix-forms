@@ -6,6 +6,8 @@ type ZodTypeName =
   | 'ZodBoolean'
   | 'ZodDate'
   | 'ZodEnum'
+  | 'ZodObject'
+  | 'ZodNativeEnum'
 
 type ShapeInfo = {
   typeName: ZodTypeName | null
@@ -75,6 +77,16 @@ function shapeInfo(
       nullable,
       getDefaultValue,
       enumValues: shape._def.values,
+    }
+  }
+
+  if (typeName === 'ZodNativeEnum') {
+    return {
+      typeName,
+      optional,
+      nullable,
+      getDefaultValue,
+      enumValues: Object.keys(shape._def.values),
     }
   }
 

@@ -2,12 +2,28 @@ import { describe, it, expect } from 'vitest'
 import * as z from 'zod'
 import { coerceValue } from './coercions'
 
+enum NativeEnum {
+  One,
+  Two,
+}
+
+const objectType = z.object({
+  boolean: z.boolean(),
+  number: z.number(),
+  date: z.date(),
+  string: z.string(),
+  enum: z.enum(['one', 'two']),
+  nativeEnum: z.nativeEnum(NativeEnum),
+})
+
 const supportedShapes = [
   z.boolean(),
   z.number(),
   z.date(),
   z.string(),
   z.enum(['one', 'two']),
+  z.nativeEnum(NativeEnum),
+  objectType,
 ]
 
 describe('coerceValue', () => {
@@ -85,10 +101,10 @@ describe('coerceValue', () => {
     expect(coerceValue(null, z.string())).toEqual('')
   })
 
-  it('coerces strings to [object Blob] when value is a file', () => {
+  it('coerces strings to [object File] when value is a file', () => {
     expect(
       coerceValue(new File([], 'some-empty-file.txt'), z.string()),
-    ).toEqual('[object Blob]')
+    ).toEqual('[object File]')
   })
 
   it('coerces enums to empty when value is empty', () => {
@@ -96,9 +112,28 @@ describe('coerceValue', () => {
     expect(coerceValue(null, z.enum(['test']))).toEqual('')
   })
 
-  it('coerces enums to [object Blob] when value is a file', () => {
+  it('coerces enums to [object File] when value is a file', () => {
     expect(
       coerceValue(new File([], 'some-empty-file.txt'), z.enum(['test'])),
-    ).toEqual('[object Blob]')
+    ).toEqual('[object File]')
+  })
+
+  it('coerce the object', () => {
+    expect(
+      coerceValue(
+        {
+          boolean: 'on',
+          number: '123',
+          date: '2001-12-31',
+          string: 'some text',
+        },
+        objectType,
+      ),
+    ).toEqual({
+      boolean: true,
+      date: new Date('2001-12-31T02:00:00.000Z'),
+      number: 123,
+      string: 'some text',
+    })
   })
 })
