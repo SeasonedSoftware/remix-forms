@@ -1,4 +1,4 @@
-import { ZodTypeAny } from 'zod'
+import { object, ZodObject, ZodObjectDef, ZodTypeAny } from 'zod'
 import { shapeInfo } from './shapeInfo'
 
 function makeCoercion<T>(
@@ -48,7 +48,11 @@ function coerceValue(value: FormDataEntryValue | null, shape?: ZodTypeAny) {
     return coerceDate({ value, optional, nullable })
   }
 
-  if (typeName === 'ZodString' || typeName === 'ZodEnum') {
+  if (
+    typeName === 'ZodString' ||
+    typeName === 'ZodEnum' ||
+    typeName === 'ZodNativeEnum'
+  ) {
     return coerceString({ value, optional, nullable })
   }
 
