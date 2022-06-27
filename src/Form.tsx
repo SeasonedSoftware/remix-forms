@@ -13,7 +13,7 @@ import {
   UseFormReturn,
   FieldError,
   Path,
-  ValidationMode,
+  ValidationMode, DefaultValues, UnpackNestedValue, DeepPartial,
 } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { FormErrors, FormValues } from './formAction.server'
@@ -35,6 +35,7 @@ export type Field<SchemaType> = {
   errors?: string[]
   autoFocus?: boolean
   value?: any
+  defaultValue?: any
   hidden?: boolean
   multiline?: boolean
   placeholder?: string
@@ -137,6 +138,7 @@ export type FormProps<Schema extends SomeZodObject> = {
   pendingButtonLabel?: string
   method?: FormMethod
   schema: Schema
+  defaultValues?: UnpackNestedValue<DeepPartial<z.infer<Schema>>>
   errors?: FormErrors<z.infer<Schema>>
   values?: FormValues<z.infer<Schema>>
   labels?: Partial<Record<keyof z.infer<Schema>, string>>
@@ -187,6 +189,7 @@ export function Form<Schema extends SomeZodObject>({
   options,
   hiddenFields,
   multiline,
+  defaultValues,
   errors: errorsProp,
   values: valuesProp,
   ...props
@@ -207,7 +210,7 @@ export function Form<Schema extends SomeZodObject>({
   const errors = { ...errorsProp, ...actionErrors }
   const values = { ...valuesProp, ...actionValues }
 
-  const form = useForm<SchemaType>({ resolver: zodResolver(schema), mode })
+  const form = useForm<SchemaType>({ resolver: zodResolver(schema), mode, defaultValues })
 
   const { formState } = form
   const { errors: formErrors, isValid } = formState
@@ -315,6 +318,7 @@ export function Form<Schema extends SomeZodObject>({
       errors: fieldErrors,
       autoFocus,
       value: (values && values[key]) || (getDefaultValue && getDefaultValue()),
+      defaultValue: (defaultValues && defaultValues[stringKey]) || (getDefaultValue && getDefaultValue()),
       hidden:
         hiddenFields && Boolean(hiddenFields.find((item) => item === key)),
       multiline: multiline && Boolean(multiline.find((item) => item === key)),
